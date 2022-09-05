@@ -1,0 +1,30 @@
+version: '3.9'
+services:
+  backend:
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      PORT: 8080
+      DB_USER: postgres
+      DB_PASSWORD: donotshare
+      DB_HOST: postgresql
+      DB_NAME: grabjobs
+      DB_MODE: disable
+    depends_on:
+      -  postgres
+
+
+  postgres:
+    container_name: postgresql
+    image: mdillon/postgis:latest
+    restart: always
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: donotshare
+      POSTGRES_DB: grabjobs
+
+
+
