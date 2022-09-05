@@ -36,5 +36,3 @@ This task has two parts
 - Mock the Database with the command `make mock`
 - Tests with mocked DB can be found in /internal/api/tests/search_test.go
 - Use the command `make tests` to run all test files
-
-![img.png](img.png)
