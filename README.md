@@ -26,6 +26,7 @@ This task has two parts
 
 
 ### Frontend
+- Frontend can be found on https://github.com/Kjasuquo/locate-nearby-jobs-frontend
 - Open a new terminal and navigate into the frontend directory with command `cd frontend` and command `cd locate-job` to enter the React directory
 - install all dependencies with command `npm i`
 - check your axios file to configure your port. Default port at axios.js is 8080
