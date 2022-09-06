@@ -14,7 +14,7 @@ import (
 )
 
 //LoadCSV reads the CSV file and returns its contents
-func LoadCSV(path string) (csvLine [][]string, err error) {
+func loadCSV(path string) (csvLine [][]string, err error) {
 	csvFile, err := os.Open(path)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func LoadCSV(path string) (csvLine [][]string, err error) {
 }
 
 //CsvToJob converts the contents of the CSV file to our Job model struct
-func CsvToJob(csvLines [][]string) ([]model.Jobs, error) {
+func csvToJob(csvLines [][]string) ([]model.Jobs, error) {
 	var jobs []model.Jobs
 
 	for i := 1; i < len(csvLines); i++ {
@@ -62,7 +62,7 @@ func CsvToJob(csvLines [][]string) ([]model.Jobs, error) {
 }
 
 //FindJob helps to check the database if there is any job already in the DB
-func FindJob(db *gorm.DB) []model.Jobs {
+func findJob(db *gorm.DB) []model.Jobs {
 	var job []model.Jobs
 	err := db.First(&job).Error
 	if err != nil {
@@ -72,7 +72,7 @@ func FindJob(db *gorm.DB) []model.Jobs {
 }
 
 //CreateJob creates the job in the Database
-func CreateJob(data []model.Jobs, db *gorm.DB) {
+func createJob(data []model.Jobs, db *gorm.DB) {
 	for _, d := range data {
 		db.Create(&d)
 	}
@@ -80,21 +80,21 @@ func CreateJob(data []model.Jobs, db *gorm.DB) {
 
 //CheckAndPopulate checks the db if if it has already been populated, if not, it populates it
 func CheckAndPopulate(db *gorm.DB, path string) {
-	jobs := FindJob(db)
+	jobs := findJob(db)
 
 	//Checking if there is no job before populating the Database
 	if len(jobs) == 0 {
-		loadCSV, err := LoadCSV(path)
+		loadCSV, err := loadCSV(path)
 		if err != nil {
 			log.Fatalf("error occured while reading CSV: %v\n", err)
 		}
 
-		job, err := CsvToJob(loadCSV)
+		job, err := csvToJob(loadCSV)
 		if err != nil {
 			log.Fatalf("error occured while converting csv files to jobs: %v\n", err)
 		}
 
-		CreateJob(job, db)
+		createJob(job, db)
 	}
 }
 
