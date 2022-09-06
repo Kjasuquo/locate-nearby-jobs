@@ -20,8 +20,6 @@ func NewDB(DB *gorm.DB) Repository {
 //Initialize opens the database, creates jobs table if not created and populate it if its empty and returns a DB
 func Initialize(dbURI string) (*gorm.DB, error) {
 
-	//dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=%s password=%s", dbHost, username, dbName, dbMode, password)
-	//dbURI:= "postgres://postgres:@localhost:5432/test?sslmode=disable"
 	conn, err := gorm.Open("postgres", dbURI)
 	if err != nil {
 		log.Fatalf("We can't open a DATABASE: %v\n", err)
