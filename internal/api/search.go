@@ -3,30 +3,28 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/kjasuquo/jobslocation/internal/helpers"
-	"net/http"
-	"strconv"
 )
 
 //SearchByLocation uses you location to get available jobs with 5km radius
 func (u *HTTPHandler) SearchByLocation(c *gin.Context) {
 
-	longitude, err := strconv.ParseFloat(c.Query("long"), 64)
-	if err != nil {
-		helpers.Response(c, "Bad request", http.StatusBadRequest, nil, []string{"Bad Request"})
-		return
-	}
-
-	latitude, err := strconv.ParseFloat(c.Query("lat"), 64)
-	if err != nil {
-		helpers.Response(c, "Bad request", http.StatusBadRequest, nil, []string{"Bad Request"})
-		return
-	}
-
-	title := c.Query("title")
+	//longitude, err := strconv.ParseFloat(c.Query("long"), 64)
+	//if err != nil {
+	//	helpers.Response(c, "Bad request", http.StatusBadRequest, nil, []string{"Bad Request"})
+	//	return
+	//}
+	//
+	//latitude, err := strconv.ParseFloat(c.Query("lat"), 64)
+	//if err != nil {
+	//	helpers.Response(c, "Bad request", http.StatusBadRequest, nil, []string{"Bad Request"})
+	//	return
+	//}
+	//
+	//title := c.Query("title")
 
 	//For testing: use longitude: 103.851 and latitude: 1.30156 and title: Developer
 
-	jobs := u.Repository.SearchJobsByLocation(title, longitude, latitude)
+	jobs := u.Repository.SearchJobsByLocation("Developer", 103.851, 1.30156)
 
 	helpers.Response(c, "jobs successfully found", 200, jobs, nil)
 }
