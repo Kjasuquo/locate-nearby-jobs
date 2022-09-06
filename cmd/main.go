@@ -10,7 +10,7 @@ func main() {
 	env := server.InitDBParams()
 
 	//Initializes the database
-	db, err := repository.Initialize(env.DbHost, env.DbUsername, env.DbName, env.DbMode, env.DbPassword)
+	db, err := repository.Initialize(env.DbUrl)
 	if err != nil {
 		return
 	}

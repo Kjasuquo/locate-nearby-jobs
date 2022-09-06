@@ -22,12 +22,8 @@ func Run(db *gorm.DB, port string) {
 
 //Params is a data model of the data in our environment variable
 type Params struct {
-	Port       string
-	DbUsername string
-	DbPassword string
-	DbHost     string
-	DbName     string
-	DbMode     string
+	Port  string
+	DbUrl string
 }
 
 //InitDBParams gets environment variables needed to run the app
@@ -42,18 +38,10 @@ func InitDBParams() Params {
 	}
 
 	port := os.Getenv("PORT")
-	dbUsername := os.Getenv("DB_USER")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbHost := os.Getenv("DB_HOST")
-	dbName := os.Getenv("DB_NAME")
-	dbMode := os.Getenv("DB_MODE")
+	dbURL := os.Getenv("DATABASE_URL")
 
 	return Params{
-		Port:       port,
-		DbUsername: dbUsername,
-		DbPassword: dbPassword,
-		DbHost:     dbHost,
-		DbName:     dbName,
-		DbMode:     dbMode,
+		Port:  port,
+		DbUrl: dbURL,
 	}
 }
