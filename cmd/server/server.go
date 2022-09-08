@@ -1,13 +1,18 @@
 package server
 
 import (
+	"context"
+	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
 	"github.com/kjasuquo/jobslocation/internal/api"
 	"github.com/kjasuquo/jobslocation/internal/repository"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
+	"time"
 )
 
 //Run injects all dependencies needed to run the app
@@ -17,7 +22,35 @@ func Run(db *gorm.DB, port string) {
 	Handler := api.NewHTTPHandler(newRepo)
 	router := SetupRouter(Handler)
 
-	_ = router.Run(":" + port)
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: router,
+	}
+
+	fmt.Printf("Listening and serving HTTP on : %v\n", port)
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("listen: %s\n", err)
+		}
+	}()
+
+	sigChan := make(chan os.Signal)
+	signal.Notify(sigChan, os.Interrupt)
+	signal.Notify(sigChan, os.Kill)
+
+	sig := <-sigChan
+	log.Println("Receive terminate and shutdown gracefully", sig)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := srv.Shutdown(ctx)
+	if err != nil {
+		log.Fatal("Server forced to shutdown:", err)
+	}
+
+	log.Println("Server exiting")
 }
 
 //Params is a data model of the data in our environment variable
