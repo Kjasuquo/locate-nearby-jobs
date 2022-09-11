@@ -26,7 +26,11 @@ func (u *HTTPHandler) SearchByLocation(c *gin.Context) {
 
 	//For testing: use longitude: 103.851 and latitude: 1.30156 and title: Developer
 
-	jobs := u.Repository.SearchJobsByLocation(title, longitude, latitude)
+	jobs, err := u.Repository.SearchJobsByLocation(title, longitude, latitude)
+	if err != nil {
+		helpers.Response(c, "Internal Server Error", http.StatusInternalServerError, nil, []string{"Internal Server Error"})
+		return
+	}
 
 	helpers.Response(c, "jobs successfully found", 200, jobs, nil)
 }

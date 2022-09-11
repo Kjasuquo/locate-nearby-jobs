@@ -35,7 +35,7 @@ func Initialize(dbURI string) (*gorm.DB, error) {
 }
 
 //SearchJobsByLocation queries the database using the user's longitude and latitude to get jobs within 5km radius
-func (db *Postgres) SearchJobsByLocation(title string, long, lat float64) []model.Jobs {
+func (db *Postgres) SearchJobsByLocation(title string, long, lat float64) ([]model.Jobs, error) {
 	var job []model.Jobs
 
 	if title != "" {
@@ -43,29 +43,35 @@ func (db *Postgres) SearchJobsByLocation(title string, long, lat float64) []mode
 	AND ST_DWithin(ST_MakePoint(longitude,latitude)::geography,ST_MakePoint(?, ?)::geography,?)
 	LIMIT 2000
 	`
-		db.DB.Raw(statement, "%"+title+"%", long, lat, 5000).Scan(&job)
+		err := db.DB.Raw(statement, "%"+title+"%", long, lat, 5000).Scan(&job).Error
+		if err != nil {
+			log.Printf("cannot find job: %v\n", err)
+			return nil, err
+		}
 
 	} else {
 		statement := `SELECT * FROM jobs
 	WHERE ST_DWithin(ST_MakePoint(longitude,latitude)::geography,ST_MakePoint(?, ?)::geography,?)
 	LIMIT 2000
 	`
-		db.DB.Raw(statement, long, lat, 5000).Scan(&job)
+		err := db.DB.Raw(statement, long, lat, 5000).Scan(&job).Error
+		if err != nil {
+			log.Printf("cannot find job: %v\n", err)
+			return nil, err
+		}
 
 	}
 
-	if len(job) == 0 {
-		return nil
-	}
-
-	return job
+	return job, nil
 }
 
 //SearchJobsByTitle returns all the jobs in the database that matches the searched keyword and returns everything if keyword is left empty
 func (db *Postgres) SearchJobsByTitle(title string) ([]model.Jobs, error) {
 	var job []model.Jobs
 	if title != "" {
-		err := db.DB.Where("title LIKE ?", "%"+title+"%").Find(&job).Error
+
+		statement := `SELECT * FROM jobs WHERE title LIKE ?`
+		err := db.DB.Raw(statement, "%"+title+"%").Scan(&job).Error
 		if err != nil {
 			log.Printf("cannot find job: %v\n", err)
 			return nil, err
@@ -73,7 +79,9 @@ func (db *Postgres) SearchJobsByTitle(title string) ([]model.Jobs, error) {
 		return job, nil
 	}
 
-	err := db.DB.Find(&job).Error
+	statement := `SELECT * FROM jobs`
+	err := db.DB.Raw(statement).Scan(&job).Error
+
 	if err != nil {
 		log.Printf("cannot find job: %v\n", err)
 		return nil, err

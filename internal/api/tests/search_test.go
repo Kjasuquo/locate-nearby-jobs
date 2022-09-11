@@ -49,7 +49,7 @@ func TestSearch(t *testing.T) {
 	var noJob []model.Jobs
 
 	t.Run("SearchByLocation: testing successful request without title", func(t *testing.T) {
-		mockDB.EXPECT().SearchJobsByLocation("", job1.Longitude, job1.Latitude).Return(jobs)
+		mockDB.EXPECT().SearchJobsByLocation("", job1.Longitude, job1.Latitude).Return(jobs, nil)
 
 		rw := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/api/v1/?long=103.851&lat=1.30156&title=", strings.NewReader(string(bytes)))
@@ -60,7 +60,7 @@ func TestSearch(t *testing.T) {
 	})
 
 	t.Run("SearchByLocation: testing with no job in location", func(t *testing.T) {
-		mockDB.EXPECT().SearchJobsByLocation("", 1.2345, 23.0000).Return(noJob)
+		mockDB.EXPECT().SearchJobsByLocation("", 1.2345, 23.0000).Return(noJob, nil)
 
 		rw := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/api/v1/?long=1.2345&lat=23&title=", strings.NewReader(string(bytes)))
@@ -71,7 +71,7 @@ func TestSearch(t *testing.T) {
 	})
 
 	t.Run("SearchByLocation: testing successful request with title", func(t *testing.T) {
-		mockDB.EXPECT().SearchJobsByLocation("Developer", job1.Longitude, job1.Latitude).Return(job)
+		mockDB.EXPECT().SearchJobsByLocation("Developer", job1.Longitude, job1.Latitude).Return(job, nil)
 
 		rw := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodGet, "/api/v1/?long=103.851&lat=1.30156&title=Developer", strings.NewReader(string(bytes)))
@@ -79,6 +79,17 @@ func TestSearch(t *testing.T) {
 		fmt.Println(rw.Code)
 		assert.Equal(t, http.StatusOK, rw.Code)
 		assert.Contains(t, rw.Body.String(), "jobs successfully found")
+	})
+
+	t.Run("SearchByLocation: testing for error", func(t *testing.T) {
+		mockDB.EXPECT().SearchJobsByLocation("Developer", job1.Longitude, job1.Latitude).Return(nil, errors.New("internal server error"))
+
+		rw := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodGet, "/api/v1/?long=103.851&lat=1.30156&title=Developer", strings.NewReader(string(bytes)))
+		router.ServeHTTP(rw, req)
+		fmt.Println(rw.Code)
+		assert.Equal(t, http.StatusInternalServerError, rw.Code)
+		assert.Contains(t, rw.Body.String(), "Internal Server Error")
 	})
 
 	t.Run("SearchByTitle: testing successful request without title", func(t *testing.T) {
