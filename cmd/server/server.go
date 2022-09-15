@@ -18,8 +18,9 @@ import (
 //Run injects all dependencies needed to run the app
 func Run(db *gorm.DB, port string) {
 	newRepo := repository.NewDB(db)
+	newRedis := repository.NewRedis()
 
-	Handler := api.NewHTTPHandler(newRepo)
+	Handler := api.NewHTTPHandler(newRepo, newRedis)
 	router := SetupRouter(Handler)
 
 	srv := &http.Server{

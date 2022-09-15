@@ -2,7 +2,9 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/kjasuquo/jobslocation/internal/helpers"
+	"github.com/kjasuquo/jobslocation/internal/model"
 	"net/http"
 	"strconv"
 )
@@ -39,10 +41,26 @@ func (u *HTTPHandler) SearchByLocation(c *gin.Context) {
 func (u *HTTPHandler) SearchByTitle(c *gin.Context) {
 	title := c.Query("title")
 
-	jobs, err := u.Repository.SearchJobsByTitle(title)
-	if err != nil {
-		helpers.Response(c, "An internal server error", 500, nil, []string{"internal server error"})
-		return
+	var jobs []model.Jobs
+
+	jobs, err := u.RedisRepo.Get(c, title)
+	if err == redis.Nil {
+		jobs, err = u.Repository.SearchJobsByTitle(title)
+		if err != nil {
+			helpers.Response(c, "An internal server error", 500, nil, []string{"internal server error"})
+			return
+		}
+
+		err = u.RedisRepo.Set(c, title, jobs)
+		if err != nil {
+			helpers.Response(c, "An internal server error", 500, nil, []string{"error setting cache"})
+			return
+		}
+	} else if err != nil {
+		if err != nil {
+			helpers.Response(c, "An internal server error", 500, nil, []string{"error getting data from cache"})
+			return
+		}
 	}
 
 	helpers.Response(c, "jobs successfully found", 200, jobs, nil)
